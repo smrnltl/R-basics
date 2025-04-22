@@ -1,0 +1,67 @@
+```{r}
+data("mtcars")
+head(mtcars)
+summary(mtcars)
+```
+```{r}
+
+cor_matrix <- cor(mtcars)
+
+round(cor_matrix, 2)
+```
+```{r}
+install.packages("corrplot")
+library(corrplot)
+
+#visual correlation matrix
+corrplot(cor_matrix, method = "color", type = "upper", addCoef.col = "black", tl.col = "black", number.cex = 0.7)
+
+```
+```{r}
+#Melt the matrix to find strongest pairs
+install.packages("reshape2")
+library(reshape2)
+
+melted_cor <- melt(cor_matrix)
+
+#Filter to avoid diagonal and duplicate values
+melted_cor <- melted_cor[melted_cor$Var1 != melted_cor$Var2, ] #remove self correlation
+melted_cor <- melted_cor[as.character(melted_cor$Var1) < as.character(melted_cor$Var2), ] #remove duplicate correlation like mpg-wt and wt-mpg
+melted_cor <- melted_cor[order(-abs(melted_cor$value)), ] #sorts the remaining pairs by absolute correlation values, from highest to lowest 
+
+head(melted_cor, 10)
+
+
+```
+```{r}
+# plot varaibles with highest negative correlation
+plot(mtcars$wt, mtcars$mpg, main = "MPG vs Weight", xlab = "Weight", ylab = "Miles per Gallon", col = "blue", pch = 19)
+
+#plot variables with highest positive correlation
+plot(mtcars$disp, mtcars$hp, main = "Cylinder vs displacement", xlab = "Cylinder", ylab = "Displacement", col = "darkgreen", pch = 19)
+```
+
+```{r}
+#install ggcorplot for advanced visuals
+
+install.packages("ggcorrplot")
+library(ggcorrplot)
+
+#plot using ggcorrplot
+ggcorrplot(cor_matrix, lab = TRUE, colors = c("red", "white", "blue"), title = "Correlation Matrix - mtcars")
+
+
+```
+```{r}
+# install and load partial correlation package
+install.packages("ppcor")
+library(ppcor)
+
+#partial correlation between mpg and wt, controlling for hp
+pcor.test(mtcars$mpg, mtcars$wt, mtcars$hp)
+
+```
+
+
+
+

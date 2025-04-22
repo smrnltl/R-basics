@@ -1,0 +1,222 @@
+```{r}
+
+#question_1 Batteries
+set.seed(123)
+battery_weights <- rnorm(1000, mean = 150, sd = 2.5)
+battery_weights
+```
+
+
+```{r}
+summary(battery_weights)
+hist(battery_weights, breaks = 30, col = "lightblue", main = "Battery Weight Distribution")
+```
+```{r}
+mu <- 150 #mean weight
+sigma <- 2.5 #sd
+lower_limit <- 145
+upper_limit <- 155
+```
+
+```{r}
+#calculate defectives
+#probability of being below 145g
+p_lower <- pnorm(lower_limit, mean = mu, sd = sigma)
+
+#probability of being above 155g
+p_upper <- 1- pnorm(upper_limit, mean = mu, sd = sigma)
+
+#total defective probability
+p_defective <- p_lower + p_upper
+
+#show as percentage
+cat("Expected percentage of defective batteries: ", round(p_defective * 100, 2), "%\n")
+```
+```{r}
+#identify and count defective batteries
+
+defective_logical <- battery_weights < lower_limit | battery_weights > upper_limit
+num_defective <- sum(defective_logical)
+percent_defective <- mean(defective_logical) * 100
+
+cat("Number of  defective batteries: ", num_defective, "\n")
+cat("Percentage of defective batteries: ", round(percent_defective, 2), "%\n")
+```
+```{r}
+#defective in Batch
+n <- 1000 #sample size (number of batteries produced)
+
+expected_defective_count <- round(p_defective * n)
+
+cat("Expected number of defective batteries in batch of ", n, ":", expected_defective_count, "\n")
+```
+
+
+```{r}
+library(ggplot2)
+
+#put the weights into a dataframe
+
+df <- data.frame(weight = battery_weights)
+df
+
+```
+
+```{r}
+ggplot(df, aes(x = weight)) +
+  geom_histogram(bins = 30, fill = "skyblue", color = "black")+
+  ggtitle("Battery Weight Distribution") +
+  xlab("Weight (grams)") +
+  ylab("Count") +
+  theme_minimal()
+
+```
+```{r}
+ggplot(df, aes(x = weight)) +
+  geom_histogram(aes(y = ..density..), bins = 30, fill = "skyblue", color = "black") +
+  stat_function(fun = dnorm, args = list(mean = mean(df$weight), sd = sd(df$weight)), color = "red", size = 1.2) +
+  ggtitle("Battery Weight with Smoothed Curve") +
+  xlab("Weight (grams)") +
+  ylab("Density") +
+  theme_minimal()
+
+```
+
+```{r}
+#question_2 Exam scores
+mu <- 65
+sigma <- 10
+n <- 500
+```
+
+```{r}
+#probability of failing (<40)
+p_fail <- pnorm(40, mean = mu, sd = sigma)
+
+#probability of scoring distinction (> 85)
+p_distinction <- 1- pnorm(85, mean = mu, sd = sigma)
+
+#convert to number of students
+num_fail <- round(p_fail * n)
+num_distinction <- round(p_distinction * n)
+
+cat("Estimated failuers:", num_fail, "students\n")
+cat("Estimated distincitons:", num_distinction, "students\n")
+
+```
+
+```{r}
+
+library(ggplot2)
+
+# create a sequence of scores form 20 to 100
+x_vals <- seq(20, 100, by = 0.1)
+y_vals <- dnorm(x_vals, mean = mu, sd = sigma)
+df <- data.frame(score = x_vals, density = y_vals)
+
+ggplot(df, aes(x=score, y = density)) +
+  geom_line(color = "blue", size = 1.2) +
+  geom_vline(xintercept = 40, linetype = "dashed", color = "red") +
+  geom_vline(xintercept = 85, linetype = "dashed", color = "green") +
+  annotate("text", x = 38, y = 0.01, label = "Fail", color = "red", hjust = 1)+
+  annotate("text", x = 87, y = 0.01, label = "Distinction", color = "green", hjust = 0) +
+  ggtitle("Distribution of Student Scores with Pass/Distinction Cutoffs") +
+  xlab("Exam Score") +
+  ylab("Density") +
+  theme_minimal()
+
+```
+
+```{r}
+# Problem: An e-commerce company processes thousands of online transactions daily. They want to develop a system to automatically flag potentially fraudulent transactions based solely on transaction amounts. Fraudulent transactions are modeled as outliers from a normal distribution of legitimate transactions.
+
+# Set seeed for reproducibility
+set.seed(123)
+
+#Parameters for the normal distribution of transaction amounts
+mean_amount <- 100
+sd_amount <- 20
+
+#Generate systhetic normal transactions
+n_normal <- 500
+normal_transactions <- rnorm(n_normal, mean = mean_amount, sd = sd_amount)
+
+#Introduce fruadulent transactions (outliers, far from the mean)
+n_fraud <- 20
+fraudulent_transactions <- rnorm(n_fraud, mean = 200, sd = 50) #Fraudulent transactions are far from the mean
+
+#combine both datasets
+transactions <- c(normal_transactions, fraudulent_transactions)
+
+#create corresponding labels vector (0 for normal, 1 for fraud)
+labels <- c(rep(0, n_normal), rep(1, n_fraud))
+
+#create a data frame
+data <- data.frame(transaction_amount = transactions, is_fraud = labels)
+
+head(data)
+
+```
+```{r}
+mean_legit <- mean(normal_transactions)
+sd_legit <- sd(normal_transactions)
+mean_legit
+sd_legit
+```
+```{r}
+#Define a function to flat outliers using z-scores #3sd greater threshold define 99.7 percent area
+flag_fraud <- function(amounts, mean_val, sd_val, threshold = 3){
+  z_scores <- abs((amounts - mean_val) /  sd_val)
+  fraud_flags <- z_scores > threshold
+  return(fraud_flags)
+}
+```
+
+```{r}
+# apply the function to all transactions
+flags <- flag_fraud(transactions, mean_legit, sd_legit)
+
+```
+```{r}
+#Review flagged transactions
+fradulent_detected <- transactions[flags]
+print("Flagged Fradulent Transactions:")
+print(fradulent_detected)
+```
+```{r}
+#Visualize flagged transcations
+plot(transactions, pch = 20, col = ifelse(flags, "red", "black"), 
+     main = "Fraud Detection via Z-Score Outliers",
+     ylab = "Amount", xlab = "Transaction Index")
+legend("topright", legend = c("Legit", "Fraud"), col = c("black", "red"), pch = 20)
+```
+
+```{r}
+#Calculate the mean and sd of transaction amounts
+mean_amount <- mean(data$transaction_amount)
+sd_amount <- sd(data$transaction_amount)
+
+#Define a threshold for fraud detection (3 SD from the mean)
+threshold_upper <- mean_amount + 3 * sd_amount
+threshold_lower <- mean_amount - 3 * sd_amount
+
+#Flag transactions as fraudulent if they exceed thresholds
+data$predected_fraud <- ifelse(data$transaction_amount > threshold_upper | data$transaction_amount < threshold_lower, 1, 0)
+
+head(data)
+```
+
+```{r}
+# confusion matrix to check the performance
+table(Predicted = data$predected_fraud
+      , Actual = data$is_fraud)
+```
+
+```{r}
+
+
+```
+
+
+
+

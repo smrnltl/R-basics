@@ -1,0 +1,107 @@
+```{r}
+set.seed(42)
+rolls < sample(1:5, size = 1000, replace = TRUE)
+
+prob_gt4 <- mean(rolls > 4)
+
+prob_even <- mean(rolls %% 2 == 0)
+
+cat("P(X > 4):", prob_gt4, "\n")
+cat("P(X is even):", prob_even, "\n")
+
+```
+
+```{r}
+set.seed(43)
+H1 <- sample(c("Heads", "Tails"), size = 10000, replace = TRUE)
+H1
+H2 <- sample(c("Heads", "Tails"), size = 10000, replace = TRUE)
+
+#conditional probability
+p_h2_given_h1_heads <- mean(H2[H1 == "Heads"] == "Heads")
+cat("P(H2 = Heads | H1 = Heads): ", p_h2_given_h1_heads, "\n")
+```
+
+```{r}
+#normal distributions of mean = 5, sd = 2
+x_vals <- seq(0, 10, by = 0.1)
+pdf_vals <- dnorm(x_vals, mean = 5, sd = 2)
+
+plot(x_vals, pdf_vals, type = "l", lwd = 2, col = "darkgreen", main = "PDF of N(5,4)", ylab = "Density", xlab = "x")
+
+```
+
+```{r}
+#probability between 4 and 6: normal distribution
+prob_4_6 <- pnorm(6, mean = 5, sd = 2) - pnorm(4, mean = 5, sd = 2)
+cat("P(4 < x < 6):", prob_4_6, "\n")
+```
+
+```{r}
+# Sample data for 20 students
+students <- data.frame(
+  student_id = 1:20,
+  num_courses = c(4, 5, 5, 3, 6, 4, 5, 4, 3, 5, 6, 4, 3, 5, 5, 6, 4, 3, 4, 6),
+  gpa = c(3.2, 3.6, 3.8, 2.9, 3.5, 3.0, 3.7, 3.1, 2.8, 3.6, 3.9, 3.3, 2.7, 3.5, 3.8, 3.9, 3.0, 2.6, 3.2, 4.0)
+)
+students
+```
+
+
+```{r}
+#frequency distribution
+table(students$num_courses)
+```
+
+```{r}
+course_counts <- table(students$num_courses)
+
+course_probs <- course_counts / sum(course_counts)
+course_probs
+```
+
+
+```{r}
+#plot the PMF (Probability Mass Function)
+
+barplot(course_probs, 
+        main = "PMF of Number of Courses",
+        xlab = "Number of Courses",
+        ylab = "Probability",
+        col = "skyblue")
+
+```
+
+```{r}
+
+#summary statistics
+summary(students$gpa)
+
+```
+```{r}
+
+#Histogram of GPA (continuous variable)
+
+hist(students$gpa, probability = TRUE,
+     main = "Histogram of GPA",
+     xlab = "GP", col = "lightgreen", breaks = 5)
+
+#overlay normal distribution
+
+mean_gpa <- mean(students$gpa)
+sd_gpa <- sd(students$gpa)
+curve(dnorm(x, mean = mean_gpa, sd = sd_gpa), col = "darkgreen", lwd = 2, add = TRUE)
+
+
+```
+```{r}
+#using normal distribution
+
+p_lower <- pnorm(3.5, mean = mean_gpa, sd = sd_gpa)
+p_upper <- pnorm(3.0, mean = mean_gpa, sd = sd_gpa)
+prob_gpa_3_35 <- p_lower - p_upper
+cat("P(3.0 < GPA < 3.5):", round(prob_gpa_3_35, 3), "\n")
+
+```
+
+
